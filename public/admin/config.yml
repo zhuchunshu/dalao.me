@@ -14,8 +14,8 @@
 
 backend:
   name: github
-  # ↓↓↓ 改成你自己的仓库：用户名/仓库名 ↓↓↓
-  repo: yourname/dalao.me
+  # 已指向本项目的实际仓库，后台保存的内容会提交到这里
+  repo: zhuchunshu/dalao.me
   branch: main
   # 登录方式：线上打开 /admin 后选「Sign In with Token」，
   # 粘贴一个 GitHub Personal Access Token（Contents 读写权限）即可，
