@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../site.config';
+import { initials } from '../lib/utils';
+
+// 关于页正文直接写在下面，改文字即可，无需了解其他文件。
+const avatar = SITE.author.avatar;
+---
+
+<BaseLayout title="关于" description={`关于 ${SITE.author.name}。`}>
+  <header class="page-header">
+    <div class="container container--narrow">
+      <div class="about-head">
+        {
+          avatar ? (
+            <img
+              src={avatar}
+              alt={`${SITE.author.name} 的头像`}
+              class="avatar"
+              width="96"
+              height="96"
+            />
+          ) : (
+            <div class="avatar avatar--fallback" aria-hidden="true">
+              {initials(SITE.author.name)}
+            </div>
+          )
+        }
+        <div>
+          <h1 class="page-header__title">{SITE.author.name}</h1>
+          <p class="hero__role">{SITE.author.role}</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container container--narrow">
+    <div class="prose">
+      {SITE.author.bio.map((paragraph) => <p>{paragraph}</p>)}
+
+      <h2>这个站点</h2>
+      <p>
+        用 <a href="https://astro.build" target="_blank" rel="noopener">Astro</a> 构建，
+        纯静态输出，托管在 Vercel 或 Cloudflare Pages 上 —— 没有服务器需要维护。
+        样式由一套 CSS 变量驱动，深浅主题跟随系统也在右上角可手动切换。
+      </p>
+
+      <h2>在做的事</h2>
+      <ul>
+        <li>写代码，偶尔写点字</li>
+        <li>琢磨怎么把复杂的东西讲清楚</li>
+        <li>把没做完的副业项目从列表里划掉</li>
+      </ul>
+
+      <h2>联系</h2>
+      <p>下面任意一个渠道都能找到我，邮件通常回得最快。</p>
+    </div>
+
+    <div class="about-links">
+      {
+        SITE.socials.map((s) => (
+          <a
+            href={s.href}
+            class="card card--linked about-link"
+            rel={s.href.startsWith('http') ? 'me noopener' : undefined}
+            target={s.href.startsWith('http') ? '_blank' : undefined}
+          >
+            <Icon name={s.icon} size="1.15rem" />
+            <span>{s.label}</span>
+          </a>
+        ))
+      }
+    </div>
+
+    {
+      SITE.author.location && (
+        <p class="list-footnote">坐标：{SITE.author.location}</p>
+      )
+    }
+  </div>
+</BaseLayout>

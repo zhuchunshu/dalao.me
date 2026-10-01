@@ -1,0 +1,35 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostLayout from '../../layouts/PostLayout.astro';
+import { visiblePosts, sortByDateDesc } from '../../lib/utils';
+
+export async function getStaticPaths() {
+  const posts = sortByDateDesc(visiblePosts(await getCollection('blog')));
+
+  return posts.map((post, index) => ({
+    params: { slug: post.id },
+    props: {
+      post,
+      // posts 为倒序：索引更小 = 更新
+      newer: posts[index - 1],
+      older: posts[index + 1],
+    },
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { Content } = await render(post);
+---
+
+<PostLayout
+  title={post.data.title}
+  description={post.data.description}
+  pubDate={post.data.pubDate}
+  updatedDate={post.data.updatedDate}
+  tags={post.data.tags}
+  body={post.body}
+  prev={older ? { id: older.id, title: older.data.title } : undefined}
+  next={newer ? { id: newer.id, title: newer.data.title } : undefined}
+>
+  <Content />
+</PostLayout>

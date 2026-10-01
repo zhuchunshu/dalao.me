@@ -1,0 +1,98 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { formatDate, formatDateLong, readingTime, toISOString } from '../lib/utils';
+
+interface Neighbor {
+  id: string;
+  title: string;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  tags?: string[];
+  /** 原始 Markdown 正文，仅用于估算阅读时长 */
+  body?: string;
+  /** 相邻文章导航 */
+  prev?: Neighbor;
+  next?: Neighbor;
+}
+
+const { title, description, pubDate, updatedDate, tags = [], body, prev, next } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} type="article" publishedTime={pubDate}>
+  <article>
+    <header class="post-header">
+      <div class="container container--narrow">
+        <h1 class="post-header__title">{title}</h1>
+        <p class="post-header__desc">{description}</p>
+
+        <div class="post-meta">
+          <time datetime={toISOString(pubDate)}>{formatDateLong(pubDate)}</time>
+          {
+            updatedDate && (
+              <>
+                <span class="post-meta__sep" />
+                <span>修订于 {formatDate(updatedDate)}</span>
+              </>
+            )
+          }
+          <span class="post-meta__sep" />
+          <span>{readingTime(body)}</span>
+        </div>
+
+        {
+          tags.length > 0 && (
+            <div class="tag-list post-tags">
+              {tags.map((tag) => (
+                <a href={`/tags/${encodeURIComponent(tag)}/`} class="tag">
+                  {tag}
+                </a>
+              ))}
+            </div>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="container container--narrow">
+      <div class="prose">
+        <slot />
+      </div>
+
+      <footer class="post-footer">
+        <a href="/blog/" class="btn">
+          <Icon name="arrow-left" size="0.95em" />
+          返回文章列表
+        </a>
+      </footer>
+
+      {
+        (prev || next) && (
+          <nav class="post-nav" aria-label="相邻文章">
+            {prev ? (
+              <a href={`/blog/${prev.id}/`} class="post-nav__item">
+                <span class="post-nav__label">← 上一篇</span>
+                <span class="post-nav__title">{prev.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+            {next ? (
+              <a href={`/blog/${next.id}/`} class="post-nav__item post-nav__item--next">
+                <span class="post-nav__label">下一篇 →</span>
+                <span class="post-nav__title">{next.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+          </nav>
+        )
+      }
+    </div>
+  </article>
+</BaseLayout>

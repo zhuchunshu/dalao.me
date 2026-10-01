@@ -1,0 +1,60 @@
+---
+import { SITE } from '../site.config';
+import { absoluteUrl } from '../lib/utils';
+
+interface Props {
+  /** 页面标题，会自动拼接站名 */
+  title?: string;
+  description?: string;
+  /** og:type */
+  type?: 'website' | 'article';
+  /** 文章发布时间，用于 og:article */
+  publishedTime?: Date;
+  /** 设为 true 时输出 noindex（如 404 页） */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  type = 'website',
+  publishedTime,
+  noindex = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} — ${SITE.title}` : `${SITE.title} — ${SITE.tagline}`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
+const ogImage = absoluteUrl('/og.png', SITE.url);
+---
+
+<title>{pageTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE.title} />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:locale" content={SITE.lang.replace('-', '_')} />
+{publishedTime && (
+  <meta property="article:published_time" content={publishedTime.toISOString()} />
+)}
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={pageTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<!-- 主题色跟随深浅模式，移动端地址栏同步变色 -->
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0a0a0b" media="(prefers-color-scheme: dark)" />
+
+<meta name="generator" content={Astro.generator} />
+<link rel="alternate" type="application/rss+xml" title={`${SITE.title} · RSS`} href="/rss.xml" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />

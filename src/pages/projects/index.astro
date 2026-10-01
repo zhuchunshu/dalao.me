@@ -1,0 +1,73 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { SITE } from '../../site.config';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) =>
+    a.data.order - b.data.order ||
+    String(b.data.year ?? '').localeCompare(String(a.data.year ?? '')),
+);
+---
+
+<BaseLayout title="项目" description={`${SITE.author.name} 做过的一些项目。`}>
+  <header class="page-header">
+    <div class="container container--wide">
+      <h1 class="page-header__title">项目</h1>
+      <p class="page-header__desc">
+        共 {projects.length} 个。想了解细节，点开任意一张卡片。
+      </p>
+    </div>
+  </header>
+
+  <div class="container container--wide">
+    {
+      projects.length === 0 ? (
+        <p class="empty">还没有项目。在 src/content/projects/ 里新建一个 .md 文件即可。</p>
+      ) : (
+        <div class="grid">
+          {projects.map((project) => (
+            <article class="card card--linked">
+              <div class="card__meta">
+                {project.data.year && <span>{project.data.year}</span>}
+                {project.data.featured && <span>· 精选</span>}
+              </div>
+
+              <h2 class="card__title">
+                <a href={`/projects/${project.id}/`}>{project.data.title}</a>
+              </h2>
+
+              <p class="card__desc">{project.data.description}</p>
+
+              {project.data.stack.length > 0 && (
+                <div class="tag-list">
+                  {project.data.stack.map((tech) => (
+                    <span class="tag">{tech}</span>
+                  ))}
+                </div>
+              )}
+
+              {(project.data.repo || project.data.demo) && (
+                <div class="card__links">
+                  {project.data.repo && (
+                    <a href={project.data.repo} class="card__link" target="_blank" rel="noopener">
+                      <Icon name="github" />
+                      源码
+                    </a>
+                  )}
+                  {project.data.demo && (
+                    <a href={project.data.demo} class="card__link" target="_blank" rel="noopener">
+                      <Icon name="external" />
+                      在线预览
+                    </a>
+                  )}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

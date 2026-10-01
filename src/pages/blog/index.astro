@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../site.config';
+import { visiblePosts, sortByDateDesc, formatDate, collectTags } from '../../lib/utils';
+
+const posts = sortByDateDesc(visiblePosts(await getCollection('blog')));
+const tags = collectTags(posts);
+
+// 按年份分组，列表更易扫读
+const byYear = new Map<string, typeof posts>();
+for (const post of posts) {
+  const year = String(post.data.pubDate.getUTCFullYear());
+  const bucket = byYear.get(year);
+  if (bucket) bucket.push(post);
+  else byYear.set(year, [post]);
+}
+const groups = [...byYear.entries()];
+---
+
+<BaseLayout title="文章" description={`${SITE.author.name} 写过的全部文章，共 ${posts.length} 篇。`}>
+  <header class="page-header">
+    <div class="container container--wide">
+      <h1 class="page-header__title">文章</h1>
+      <p class="page-header__desc">
+        共 {posts.length} 篇
+        {tags.length > 0 && (
+          <>
+            {' · '}
+            <a href="/tags/">全部标签</a>
+          </>
+        )}
+      </p>
+    </div>
+  </header>
+
+  <div class="container container--wide">
+    {
+      posts.length === 0 ? (
+        <p class="empty">还没有文章。在 src/content/blog/ 里新建一个 .md 文件即可。</p>
+      ) : (
+        <div class="timeline">
+          {groups.map(([year, items]) => (
+            <section class="timeline__group">
+              <h2 class="timeline__year">{year}</h2>
+              <ul class="post-list">
+                {items.map((post) => (
+                  <li class="post-item">
+                    <a href={`/blog/${post.id}/`} class="post-item__link">
+                      <span>
+                        <span class="post-item__title">{post.data.title}</span>
+                        <span class="post-item__desc">{post.data.description}</span>
+                      </span>
+                      <time class="post-item__date" datetime={post.data.pubDate.toISOString()}>
+                        {formatDate(post.data.pubDate).slice(5)}
+                      </time>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

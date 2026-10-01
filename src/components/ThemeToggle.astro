@@ -1,0 +1,58 @@
+---
+import Icon from './Icon.astro';
+---
+
+<button
+  type="button"
+  class="icon-btn"
+  id="theme-toggle"
+  aria-label="切换深浅主题"
+  title="切换深浅主题"
+>
+  <Icon name="moon" class="icon-moon" />
+  <Icon name="sun" class="icon-sun" />
+</button>
+
+<script>
+  // Astro 会打包此模块脚本并只执行一次（跨页面导航时不会重复注册）。
+  const KEY = 'theme';
+  const root = document.documentElement;
+  const button = document.getElementById('theme-toggle');
+
+  function current(): string {
+    return root.dataset.theme === 'dark' ? 'dark' : 'light';
+  }
+
+  function sync() {
+    const isDark = current() === 'dark';
+    button?.setAttribute('aria-label', isDark ? '切换到浅色主题' : '切换到深色主题');
+    button?.setAttribute('title', isDark ? '切换到浅色主题' : '切换到深色主题');
+  }
+
+  button?.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem(KEY, next);
+    } catch {
+      // 隐私模式下 localStorage 可能不可用，忽略即可：本次会话仍生效
+    }
+    sync();
+  });
+
+  // 用户从未手动选择过时，跟随系统主题实时变化
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(KEY);
+    } catch {
+      stored = null;
+    }
+    if (stored !== 'light' && stored !== 'dark') {
+      root.dataset.theme = e.matches ? 'dark' : 'light';
+      sync();
+    }
+  });
+
+  sync();
+</script>

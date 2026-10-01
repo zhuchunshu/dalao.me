@@ -1,0 +1,199 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../site.config';
+import { visiblePosts, sortByDateDesc, formatDate, initials } from '../lib/utils';
+
+const [postEntries, projectEntries] = await Promise.all([
+  getCollection('blog'),
+  getCollection('projects'),
+]);
+
+const posts = sortByDateDesc(visiblePosts(postEntries));
+
+// 精选文章：不足 2 篇时该区块没有存在的意义，直接并入「最新文章」，避免首页出现孤零零一张卡
+const featuredPosts = posts.filter((p) => p.data.featured).slice(0, 3);
+const showFeaturedPosts = SITE.sections.showFeaturedPosts && featuredPosts.length >= 2;
+const featuredIds = new Set(showFeaturedPosts ? featuredPosts.map((p) => p.id) : []);
+
+// 「最新文章」排除已在上方精选区出现的条目，两区不重复
+const latestPosts = posts.filter((p) => !featuredIds.has(p.id)).slice(0, 6);
+
+// 项目排序：order 升序，其次按年份倒序
+const projects = [...projectEntries].sort(
+  (a, b) =>
+    a.data.order - b.data.order ||
+    String(b.data.year ?? '').localeCompare(String(a.data.year ?? '')),
+);
+
+// 首页只放 4 张卡：精选优先，不足时用其余项目补足，避免版面过空
+const featuredProjects = [
+  ...projects.filter((p) => p.data.featured),
+  ...projects.filter((p) => !p.data.featured),
+].slice(0, 4);
+
+const avatar = SITE.author.avatar;
+---
+
+<BaseLayout>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container container--wide hero__inner">
+      {
+        avatar ? (
+          <img
+            src={avatar}
+            alt={`${SITE.author.name} 的头像`}
+            class="avatar"
+            width="96"
+            height="96"
+            loading="eager"
+            decoding="async"
+          />
+        ) : (
+          <div class="avatar avatar--fallback" aria-hidden="true">
+            {initials(SITE.author.name)}
+          </div>
+        )
+      }
+
+      <div class="hero__body">
+        <h1 class="hero__name">{SITE.author.name}</h1>
+        <p class="hero__role">{SITE.author.role}</p>
+
+        <div class="hero__bio">
+          {SITE.author.bio.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+
+        <div class="hero__actions">
+          <a href="/projects/" class="btn btn--primary">
+            看看项目
+            <Icon name="arrow-right" size="0.95em" />
+          </a>
+          <a href="/blog/" class="btn">读文章</a>
+        </div>
+
+        <div class="hero__socials">
+          {
+            SITE.socials.map((s) => (
+              <a
+                href={s.href}
+                class="social-link"
+                rel={s.href.startsWith('http') ? 'me noopener' : undefined}
+                target={s.href.startsWith('http') ? '_blank' : undefined}
+              >
+                <Icon name={s.icon} />
+                <span>{s.label}</span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 精选项目 -->
+  {
+    SITE.sections.showProjects && featuredProjects.length > 0 && (
+      <section class="section">
+        <div class="container container--wide">
+          <div class="section-head">
+            <h2 class="section-title">项目</h2>
+            <a href="/projects/" class="section-more">
+              全部 {projects.length} 个 →
+            </a>
+          </div>
+
+          <div class="grid">
+            {featuredProjects.map((project) => (
+              <article class="card card--linked">
+                <div class="card__meta">
+                  {project.data.year && <span>{project.data.year}</span>}
+                </div>
+                <h3 class="card__title">
+                  <a href={`/projects/${project.id}/`}>{project.data.title}</a>
+                </h3>
+                <p class="card__desc">{project.data.description}</p>
+                {project.data.stack.length > 0 && (
+                  <div class="tag-list">
+                    {project.data.stack.slice(0, 4).map((tech) => (
+                      <span class="tag">{tech}</span>
+                    ))}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 精选文章 -->
+  {
+    showFeaturedPosts && (
+      <section class="section">
+        <div class="container container--wide">
+          <div class="section-head">
+            <h2 class="section-title">精选文章</h2>
+            <a href="/blog/" class="section-more">
+              全部文章 →
+            </a>
+          </div>
+
+          <div class="grid">
+            {featuredPosts.map((post) => (
+              <article class="card card--linked">
+                <div class="card__meta">
+                  <time datetime={post.data.pubDate.toISOString()}>
+                    {formatDate(post.data.pubDate)}
+                  </time>
+                </div>
+                <h3 class="card__title">
+                  <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+                </h3>
+                <p class="card__desc">{post.data.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 最新文章 -->
+  {
+    SITE.sections.showLatestPosts && latestPosts.length > 0 && (
+      <section class="section">
+        <div class="container container--wide">
+          <div class="section-head">
+            <h2 class="section-title">最新文章</h2>
+            <a href="/rss.xml" class="section-more">
+              RSS 订阅 →
+            </a>
+          </div>
+
+          <ul class="post-list">
+            {latestPosts.map((post) => (
+              <li class="post-item">
+                <a href={`/blog/${post.id}/`} class="post-item__link">
+                  <span class="post-item__title">{post.data.title}</span>
+                  <time class="post-item__date" datetime={post.data.pubDate.toISOString()}>
+                    {formatDate(post.data.pubDate)}
+                  </time>
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          {posts.length > latestPosts.length && (
+            <p class="list-footnote">
+              <a href="/blog/">查看全部 {posts.length} 篇文章 →</a>
+            </p>
+          )}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

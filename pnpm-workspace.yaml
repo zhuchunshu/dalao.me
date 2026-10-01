@@ -1,0 +1,6 @@
+# pnpm 12 配置入口（package.json 的 "pnpm" 字段自 v11 起不再读取）
+# strictDepBuilds 默认 true：任何未经审批的依赖构建脚本会让安装以非零码退出，
+# 进而中断 Vercel / Cloudflare Pages 的线上构建。此处显式放行所需的两项。
+allowBuilds:
+  esbuild: true
+  sharp: true

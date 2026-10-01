@@ -1,0 +1,32 @@
+---
+import { SITE } from '../site.config';
+import Icon from './Icon.astro';
+
+const year = new Date().getUTCFullYear();
+const owner = SITE.footer.copyright ?? SITE.author.name;
+---
+
+<footer class="site-footer">
+  <div class="container container--wide site-footer__inner">
+    <div class="site-footer__copy">
+      © {year} {owner}{SITE.footer.extra ? ` · ${SITE.footer.extra}` : ''}
+    </div>
+
+    <div class="site-footer__links">
+      {
+        SITE.socials.map((s) => (
+          <a
+            href={s.href}
+            class="social-link"
+            rel={s.href.startsWith('http') ? 'me noopener' : undefined}
+            target={s.href.startsWith('http') ? '_blank' : undefined}
+            title={s.label}
+          >
+            <Icon name={s.icon} />
+            <span>{s.label}</span>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</footer>

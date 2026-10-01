@@ -1,0 +1,72 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const { title, description, year, stack, repo, demo } = project.data;
+---
+
+<BaseLayout title={title} description={description} type="article">
+  <article>
+    <header class="page-header page-header--bordered">
+      <div class="container container--narrow">
+        <p class="detail-eyebrow">
+          {year && <span>{year}</span>}
+          <a href="/projects/">项目</a>
+        </p>
+        <h1 class="page-header__title">{title}</h1>
+        <p class="page-header__desc">{description}</p>
+
+        {stack.length > 0 && (
+          <div class="tag-list post-tags">
+            {stack.map((tech) => (
+              <span class="tag">{tech}</span>
+            ))}
+          </div>
+        )}
+
+        {
+          (repo || demo) && (
+            <div class="hero__actions">
+              {demo && (
+                <a href={demo} class="btn btn--primary" target="_blank" rel="noopener">
+                  <Icon name="external" size="0.95em" />
+                  在线预览
+                </a>
+              )}
+              {repo && (
+                <a href={repo} class="btn" target="_blank" rel="noopener">
+                  <Icon name="github" size="0.95em" />
+                  源码
+                </a>
+              )}
+            </div>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="container container--narrow">
+      <div class="prose">
+        <Content />
+      </div>
+
+      <footer class="post-footer">
+        <a href="/projects/" class="btn">
+          <Icon name="arrow-left" size="0.95em" />
+          返回项目列表
+        </a>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>

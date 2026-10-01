@@ -1,0 +1,63 @@
+---
+import '../styles/global.css';
+import { SITE } from '../site.config';
+import SEO from '../components/SEO.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  noindex?: boolean;
+}
+
+const { title, description, type, publishedTime, noindex } = Astro.props;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/*
+      防主题闪烁：此脚本必须在样式与正文之前同步执行，且不能被 Astro 打包/延迟，
+      否则页面会先用浅色渲染再跳成深色。
+    */}
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem('theme');
+          const theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+
+    <SEO
+      title={title}
+      description={description}
+      type={type}
+      publishedTime={publishedTime}
+      noindex={noindex}
+    />
+  </head>
+
+  <body>
+    <a href="#main" class="skip-link">跳到主内容</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
