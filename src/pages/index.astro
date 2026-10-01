@@ -2,8 +2,8 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import { SITE } from '../site.config';
-import { visiblePosts, sortByDateDesc, formatDate, initials } from '../lib/utils';
+import { SITE } from '../lib/site';
+import { visiblePosts, sortByDateDesc, formatDate, initials, statusLabel } from '../lib/utils';
 
 const [postEntries, projectEntries] = await Promise.all([
   getCollection('blog'),
@@ -18,7 +18,9 @@ const showFeaturedPosts = SITE.sections.showFeaturedPosts && featuredPosts.lengt
 const featuredIds = new Set(showFeaturedPosts ? featuredPosts.map((p) => p.id) : []);
 
 // 「最新文章」排除已在上方精选区出现的条目，两区不重复
-const latestPosts = posts.filter((p) => !featuredIds.has(p.id)).slice(0, 6);
+const latestPosts = posts
+  .filter((p) => !featuredIds.has(p.id))
+  .slice(0, SITE.home.latestPostsCount);
 
 // 项目排序：order 升序，其次按年份倒序
 const projects = [...projectEntries].sort(
@@ -27,11 +29,11 @@ const projects = [...projectEntries].sort(
     String(b.data.year ?? '').localeCompare(String(a.data.year ?? '')),
 );
 
-// 首页只放 4 张卡：精选优先，不足时用其余项目补足，避免版面过空
+// 首页项目卡：精选优先，不足时用其余项目补足，避免版面过空。数量可在 site.json 的 home.projectsCount 调整
 const featuredProjects = [
   ...projects.filter((p) => p.data.featured),
   ...projects.filter((p) => !p.data.featured),
-].slice(0, 4);
+].slice(0, SITE.home.projectsCount);
 
 const avatar = SITE.author.avatar;
 ---
@@ -67,11 +69,11 @@ const avatar = SITE.author.avatar;
         </div>
 
         <div class="hero__actions">
-          <a href="/projects/" class="btn btn--primary">
-            看看项目
+          <a href={SITE.home.primaryCta.href} class="btn btn--primary">
+            {SITE.home.primaryCta.label}
             <Icon name="arrow-right" size="0.95em" />
           </a>
-          <a href="/blog/" class="btn">读文章</a>
+          <a href={SITE.home.secondaryCta.href} class="btn">{SITE.home.secondaryCta.label}</a>
         </div>
 
         <div class="hero__socials">
@@ -110,6 +112,9 @@ const avatar = SITE.author.avatar;
               <article class="card card--linked">
                 <div class="card__meta">
                   {project.data.year && <span>{project.data.year}</span>}
+                  {statusLabel(project.data.status) && (
+                    <span class="status-badge">{statusLabel(project.data.status)}</span>
+                  )}
                 </div>
                 <h3 class="card__title">
                   <a href={`/projects/${project.id}/`}>{project.data.title}</a>

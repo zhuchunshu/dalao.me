@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../site.config';
+import { SITE } from '../lib/site';
 import { absoluteUrl } from '../lib/utils';
 
 interface Props {
@@ -12,6 +12,8 @@ interface Props {
   publishedTime?: Date;
   /** 设为 true 时输出 noindex（如 404 页） */
   noindex?: boolean;
+  /** 文章首发在别处时，用原文地址覆盖 canonical */
+  canonicalUrl?: string;
 }
 
 const {
@@ -20,10 +22,11 @@ const {
   type = 'website',
   publishedTime,
   noindex = false,
+  canonicalUrl = '',
 } = Astro.props;
 
 const pageTitle = title ? `${title} — ${SITE.title}` : `${SITE.title} — ${SITE.tagline}`;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
+const canonical = canonicalUrl || new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
 const ogImage = absoluteUrl('/og.png', SITE.url);
 ---
 

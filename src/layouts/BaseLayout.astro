@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { SITE } from '../site.config';
+import { SITE } from '../lib/site';
 import SEO from '../components/SEO.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -11,9 +11,11 @@ interface Props {
   type?: 'website' | 'article';
   publishedTime?: Date;
   noindex?: boolean;
+  /** 覆盖 canonical 指向（文章首发在别处时使用） */
+  canonicalUrl?: string;
 }
 
-const { title, description, type, publishedTime, noindex } = Astro.props;
+const { title, description, type, publishedTime, noindex, canonicalUrl } = Astro.props;
 ---
 
 <!doctype html>
@@ -49,6 +51,7 @@ const { title, description, type, publishedTime, noindex } = Astro.props;
       type={type}
       publishedTime={publishedTime}
       noindex={noindex}
+      canonicalUrl={canonicalUrl}
     />
   </head>
 

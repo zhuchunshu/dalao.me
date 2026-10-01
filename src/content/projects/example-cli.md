@@ -5,6 +5,12 @@ year: 2025
 stack:
   - Rust
   - CLI
+status: wip
+role: 独立开发
+highlights:
+  - 单文件二进制，无运行时依赖，扔到任何机器上都能跑
+  - 启动耗时在毫秒级 —— 这是它被塞进脚本、一天调用几百次的前提
+  - 所有子命令支持 --dry-run，先看清楚要动什么再执行
 order: 2
 repo: https://github.com/yourname/example-cli
 ---

@@ -1,0 +1,361 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+#
+# ============================================================================
+#  后台配置
+# ============================================================================
+#  想让后台能编辑新内容？在下面 collections 里加一段。
+#  想加字段？在对应 collection 的 fields 里加一行。
+#
+#  两条硬性约定：
+#  1. 字段的 name 必须与 src/content.config.ts 里的 Zod schema 完全一致，
+#     否则保存后构建会失败（这正是我们想要的：错误暴露在构建期，而不是线上）。
+#  2. 新建字段后，记得同时去 src/content.config.ts 加上对应的校验规则与默认值。
+# ============================================================================
+
+backend:
+  name: github
+  # ↓↓↓ 改成你自己的仓库：用户名/仓库名 ↓↓↓
+  repo: yourname/dalao.me
+  branch: main
+  # 登录方式：线上打开 /admin 后选「Sign In with Token」，
+  # 粘贴一个 GitHub Personal Access Token（Contents 读写权限）即可，
+  # 无需注册 OAuth App、无需部署任何认证服务。Token 只存在你浏览器的本地存储里。
+
+# 媒体文件（图片等）存放位置与对外访问路径
+media_folder: public/media
+public_folder: /media
+
+site_url: https://dalao.me
+display_url: https://dalao.me
+
+collections:
+  # ==========================================================================
+  #  文章
+  # ==========================================================================
+  - name: blog
+    label: 文章
+    label_singular: 文章
+    folder: src/content/blog
+    create: true
+    extension: md
+    format: frontmatter
+    summary: "{{title}} — {{pubDate}}"
+    fields:
+      - name: title
+        label: 标题
+        widget: string
+
+      - name: description
+        label: 摘要
+        widget: text
+        hint: 一句话说明。会显示在文章列表、搜索结果和社交分享卡片上。
+
+      - name: pubDate
+        label: 发布日期
+        widget: datetime
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        picker_utc: true
+
+      - name: updatedDate
+        label: 修订日期
+        widget: datetime
+        required: false
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        picker_utc: true
+        hint: 可选。改动较大的修订填一下。
+
+      - name: tags
+        label: 标签
+        widget: list
+        required: false
+        default: []
+        hint: 回车添加一个。会生成对应的标签聚合页。
+
+      - name: draft
+        label: 草稿
+        widget: boolean
+        default: false
+        hint: 打开后只在本地预览可见，不会发布到线上。
+
+      - name: featured
+        label: 精选
+        widget: boolean
+        default: false
+        hint: 出现在首页「精选文章」区（至少两篇时该区块才会显示）。
+
+      - name: pinned
+        label: 置顶
+        widget: boolean
+        default: false
+
+      - name: cover
+        label: 封面图
+        widget: image
+        required: false
+        hint: 可选。留空则不显示封面。
+
+      - name: series
+        label: 所属系列
+        widget: string
+        required: false
+        hint: 可选。同一主题的多篇文章填同一个名字，便于归类。
+
+      - name: seoTitle
+        label: SEO 标题
+        widget: string
+        required: false
+        hint: 留空则使用上面的「标题」。
+
+      - name: seoDescription
+        label: SEO 描述
+        widget: text
+        required: false
+        hint: 留空则使用上面的「摘要」。
+
+      - name: canonical
+        label: 原文链接
+        widget: string
+        required: false
+        hint: 可选。文章首发在其他平台时填写，会告诉搜索引擎原出处。
+
+      - name: body
+        label: 正文
+        widget: markdown
+
+  # ==========================================================================
+  #  项目
+  # ==========================================================================
+  - name: projects
+    label: 项目
+    label_singular: 项目
+    folder: src/content/projects
+    create: true
+    extension: md
+    format: frontmatter
+    summary: "{{title}}（{{year}}）"
+    fields:
+      - name: title
+        label: 名称
+        widget: string
+
+      - name: description
+        label: 简介
+        widget: text
+        hint: 一句话说明。显示在项目卡片上。
+
+      - name: year
+        label: 年份
+        widget: string
+        required: false
+
+      - name: stack
+        label: 技术栈
+        widget: list
+        required: false
+        default: []
+        hint: 回车添加一项，如 Astro、Rust。
+
+      - name: status
+        label: 状态
+        widget: select
+        default: active
+        options:
+          - { label: 维护中, value: active }
+          - { label: 开发中, value: wip }
+          - { label: 已归档, value: archived }
+
+      - name: role
+        label: 担任角色
+        widget: string
+        required: false
+        hint: 可选。如 独立开发 / 前端负责人。
+
+      - name: highlights
+        label: 亮点
+        widget: list
+        required: false
+        default: []
+        hint: 回车添加一条。显示在项目详情页。
+
+      - name: gallery
+        label: 图集
+        widget: list
+        required: false
+        default: []
+        hint: 可选。上传的图片会按顺序显示在正文之后。
+        field:
+          name: image
+          widget: image
+
+      - name: repo
+        label: 源码地址
+        widget: string
+        required: false
+
+      - name: demo
+        label: 在线地址
+        widget: string
+        required: false
+
+      - name: featured
+        label: 精选
+        widget: boolean
+        default: false
+        hint: 精选项目会排在首页项目区的最前面。
+
+      - name: order
+        label: 排序权重
+        widget: number
+        default: 999
+        value_type: int
+        hint: 数字越小越靠前。
+
+      - name: body
+        label: 说明
+        widget: markdown
+
+  # ==========================================================================
+  #  自定义页面（/uses/、/friends/ 这类固定网址的页面）
+  # ==========================================================================
+  - name: pages
+    label: 自定义页面
+    label_singular: 页面
+    folder: src/content/pages
+    create: true
+    extension: md
+    format: frontmatter
+    summary: "{{title}}"
+    fields:
+      - name: title
+        label: 页面标题
+        widget: string
+
+      - name: description
+        label: 页面说明
+        widget: text
+        required: false
+
+      - name: noindex
+        label: 不被搜索引擎收录
+        widget: boolean
+        default: false
+
+      - name: order
+        label: 排序权重
+        widget: number
+        default: 999
+        value_type: int
+
+      - name: body
+        label: 正文
+        widget: markdown
+        hint: 文件名决定网址，如 uses.md → /uses/。避免使用 about、blog、projects、tags 这些已被占用的名字。
+
+  # ==========================================================================
+  #  站点设置（对应 src/data/site.json）
+  # ==========================================================================
+  - name: settings
+    label: 站点设置
+    files:
+      - name: site
+        label: 基本信息 / 导航 / 页脚
+        file: src/data/site.json
+        fields:
+          - name: url
+            label: 站点地址
+            widget: string
+            hint: 必须含 https://。用于 sitemap、RSS 与分享链接。
+
+          - name: title
+            label: 站点名
+            widget: string
+
+          - name: tagline
+            label: 副标题
+            widget: string
+
+          - name: description
+            label: 默认 SEO 描述
+            widget: text
+
+          - name: lang
+            label: 页面语言
+            widget: string
+            default: zh-CN
+
+          - name: author
+            label: 作者信息
+            widget: object
+            fields:
+              - { name: name, label: 姓名, widget: string }
+              - { name: role, label: 身份标签, widget: string, required: false }
+              - { name: bio, label: 简介段落, widget: list, required: false, default: [] }
+              - { name: location, label: 所在地, widget: string, required: false }
+              - { name: email, label: 邮箱, widget: string, required: false }
+              - { name: avatar, label: 头像路径, widget: string, required: false, hint: "如 /avatar.jpg；留空则用姓名首字生成字母块" }
+
+          - name: socials
+            label: 社交链接
+            widget: list
+            required: false
+            default: []
+            fields:
+              - { name: label, label: 显示名, widget: string }
+              - { name: href, label: 链接, widget: string }
+              - name: icon
+                label: 图标
+                widget: select
+                default: link
+                options:
+                  - { label: GitHub, value: github }
+                  - { label: X (Twitter), value: x }
+                  - { label: 邮箱, value: mail }
+                  - { label: RSS, value: rss }
+                  - { label: Telegram, value: telegram }
+                  - { label: 地球 / 网站, value: globe }
+                  - { label: 通用链接, value: link }
+
+          - name: nav
+            label: 顶部导航
+            widget: list
+            required: false
+            default: []
+            fields:
+              - { name: label, label: 显示名, widget: string }
+              - { name: href, label: 链接, widget: string }
+
+          - name: sections
+            label: 首页区块开关
+            widget: object
+            fields:
+              - { name: showProjects, label: 显示项目区, widget: boolean, default: true }
+              - { name: showFeaturedPosts, label: 显示精选文章区, widget: boolean, default: true }
+              - { name: showLatestPosts, label: 显示最新文章区, widget: boolean, default: true }
+
+          - name: home
+            label: 首页细节
+            widget: object
+            fields:
+              - name: primaryCta
+                label: 主按钮
+                widget: object
+                fields:
+                  - { name: label, label: 文字, widget: string }
+                  - { name: href, label: 链接, widget: string }
+              - name: secondaryCta
+                label: 次按钮
+                widget: object
+                fields:
+                  - { name: label, label: 文字, widget: string }
+                  - { name: href, label: 链接, widget: string }
+              - { name: projectsCount, label: 项目区显示数量, widget: number, default: 4, value_type: int }
+              - { name: latestPostsCount, label: 最新文章显示数量, widget: number, default: 6, value_type: int }
+
+          - name: footer
+            label: 页脚
+            widget: object
+            fields:
+              - { name: copyright, label: 版权署名, widget: string, required: false, hint: 留空则使用作者姓名 }
+              - { name: extra, label: 附加信息, widget: string, required: false, hint: 如备案号 }

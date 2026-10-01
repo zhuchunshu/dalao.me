@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
+import { statusLabel } from '../../lib/utils';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -13,7 +14,11 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
-const { title, description, year, stack, repo, demo } = project.data;
+
+const { title, description, year, stack, repo, demo, status, role, highlights, gallery } =
+  project.data;
+
+const badge = statusLabel(status);
 ---
 
 <BaseLayout title={title} description={description} type="article">
@@ -22,18 +27,24 @@ const { title, description, year, stack, repo, demo } = project.data;
       <div class="container container--narrow">
         <p class="detail-eyebrow">
           {year && <span>{year}</span>}
+          {badge && <span class="status-badge">{badge}</span>}
           <a href="/projects/">项目</a>
         </p>
+
         <h1 class="page-header__title">{title}</h1>
         <p class="page-header__desc">{description}</p>
 
-        {stack.length > 0 && (
-          <div class="tag-list post-tags">
-            {stack.map((tech) => (
-              <span class="tag">{tech}</span>
-            ))}
-          </div>
-        )}
+        {role && <p class="project-role">担任角色：{role}</p>}
+
+        {
+          stack.length > 0 && (
+            <div class="tag-list post-tags">
+              {stack.map((tech) => (
+                <span class="tag">{tech}</span>
+              ))}
+            </div>
+          )
+        }
 
         {
           (repo || demo) && (
@@ -60,6 +71,32 @@ const { title, description, year, stack, repo, demo } = project.data;
       <div class="prose">
         <Content />
       </div>
+
+      {
+        highlights.length > 0 && (
+          <section class="project-block">
+            <h2 class="project-block__title">亮点</h2>
+            <ul class="project-highlights">
+              {highlights.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        gallery.length > 0 && (
+          <section class="project-block">
+            <h2 class="project-block__title">图集</h2>
+            <div class="project-gallery">
+              {gallery.map((src) => (
+                <img src={src} alt="" loading="lazy" decoding="async" />
+              ))}
+            </div>
+          </section>
+        )
+      }
 
       <footer class="post-footer">
         <a href="/projects/" class="btn">

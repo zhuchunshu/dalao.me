@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+/**
+ * 自定义页面的渲染路由。
+ * src/content/pages/ 下的每个文件 → 站点根路径下的一个页面（uses.md → /uses/）。
+ *
+ * 注意：Astro 中静态路由优先于动态路由，所以 about / blog / projects / tags
+ * 这些固定页面不会被这里的同名 slug 覆盖。在后台新建页面时避开这些名字即可。
+ */
+export async function getStaticPaths() {
+  const pages = (await getCollection('pages')).sort(
+    (a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title, 'zh-CN'),
+  );
+
+  return pages.map((page) => ({
+    params: { slug: page.id },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+const { title, description, noindex } = page.data;
+---
+
+<BaseLayout title={title} description={description || `${title} — 自定义页面`} noindex={noindex}>
+  <header class="page-header">
+    <div class="container container--narrow">
+      <h1 class="page-header__title">{title}</h1>
+      {description && <p class="page-header__desc">{description}</p>}
+    </div>
+  </header>
+
+  <div class="container container--narrow">
+    <div class="prose">
+      <Content />
+    </div>
+  </div>
+</BaseLayout>

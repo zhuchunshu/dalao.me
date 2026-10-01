@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro';
-import { SITE } from '../site.config';
+import { SITE } from '../lib/site';
 
 export function GET(context: APIContext) {
   // context.site 的类型是 URL | undefined，而 SITE.url 是字符串，

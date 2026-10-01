@@ -37,11 +37,18 @@ export function readingTime(body: string | undefined): string {
   return `${minutes} 分钟`;
 }
 
-/** 按发布日期倒序；同日期时按标题稳定排序，避免不同机器构建顺序不一致 */
-export function sortByDateDesc<T extends { data: { pubDate: Date; title: string } }>(
-  entries: T[],
-): T[] {
+/**
+ * 排序：置顶优先，然后按发布日期倒序；
+ * 同日期时按标题稳定排序，避免不同机器构建顺序不一致。
+ * pinned 是可选字段，没有它的集合（如项目）照常按日期排。
+ */
+export function sortByDateDesc<
+  T extends { data: { pubDate: Date; title: string; pinned?: boolean } },
+>(entries: T[]): T[] {
   return [...entries].sort((a, b) => {
+    const pinned = Number(b.data.pinned ?? false) - Number(a.data.pinned ?? false);
+    if (pinned !== 0) return pinned;
+
     const diff = b.data.pubDate.getTime() - a.data.pubDate.getTime();
     return diff !== 0 ? diff : a.data.title.localeCompare(b.data.title, 'zh-CN');
   });
@@ -84,4 +91,19 @@ export function absoluteUrl(path: string, site: string): string {
   const base = site.replace(/\/$/, '');
   const suffix = path.startsWith('/') ? path : `/${path}`;
   return `${base}${suffix}`;
+}
+
+/**
+ * 项目状态 → 中文标签。
+ * active 是默认值，界面上不显示徽章，免得每张卡都挂一个「维护中」。
+ */
+export const PROJECT_STATUS: Record<string, string> = {
+  active: '维护中',
+  wip: '开发中',
+  archived: '已归档',
+};
+
+/** 取状态徽章文案；默认状态或未知值返回空字符串，调用处据此决定是否渲染 */
+export function statusLabel(status: string): string {
+  return status === 'active' ? '' : (PROJECT_STATUS[status] ?? '');
 }

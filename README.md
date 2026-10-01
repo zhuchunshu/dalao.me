@@ -2,14 +2,17 @@
 
 个人网站。[Astro](https://astro.build) 构建，输出纯静态文件，可部署到 **Vercel** 或 **Cloudflare Pages** —— 不需要买服务器，域名之外没有第二笔支出。
 
+自带一个**可视化后台**：打开 `/admin` 就能写文章、加项目、改站点配置，改完自动提交到 Git 并触发重新部署。后台本身不占任何服务器资源。
+
 ## 特性
 
 - 纯静态输出，零服务端运行时
-- 深浅主题，首帧不闪烁，可跟随系统
-- 文章 / 项目 / 标签 / RSS / sitemap / 404 齐全
-- 全部个人信息集中在**一个**配置文件里
-- 零 CSS 框架、零客户端 JS 框架 —— 全站 JavaScript 只有两小段，都服务于主题切换
-- 响应式，含打印样式与无障碍标签
+- **可视化后台**，内容与站点配置都能点着改
+- 后台无需 OAuth 服务器、无需数据库，用 GitHub 令牌即开即用
+- 深色 / 浅色主题，首帧不闪烁，可跟随系统
+- 文章 / 项目 / 自定义页面 / 标签 / RSS / sitemap / 404 齐全
+- 内容模型可扩展：加一个字段只需改两处
+- 零 CSS 框架、零客户端 JS 框架
 
 ---
 
@@ -27,119 +30,161 @@ pnpm check      # 类型检查
 
 ---
 
-## 改内容：只有三件事
+## 后台
 
-### 1. 改个人信息
+后台是 [Sveltia CMS](https://sveltiacms.app)：一个从 CDN 加载的单文件应用，直接读写仓库里的 Markdown 与 JSON 文件。它不依赖任何后端服务 —— **没有数据库、没有 API 服务器、没有需要付费的东西**。
 
-编辑 **`src/site.config.ts`**，站点所有可配置项都在这里，不用碰任何组件：
+### 线上使用（部署之后）
 
-| 字段 | 作用 |
+1. 先按下面的「部署」把站点发上去
+2. 打开 `https://dalao.me/admin/`
+3. 点 **使用访问令牌登录**，粘一个 GitHub Personal Access Token
+
+生成令牌时勾选权限：
+
+| 令牌类型 | 需要的权限 |
 | --- | --- |
-| `url` | 站点地址，务必与 `astro.config.mjs` 里的 `site` 一致 |
-| `title` / `tagline` / `description` | 站点名、首页副标题、默认 SEO 描述 |
-| `author.name` / `role` / `bio` | 首页显示的姓名、身份、简介段落 |
-| `author.avatar` | 头像：把图片放进 `public/`，这里填 `/avatar.jpg`；留空则用姓名首字 |
-| `author.email` / `location` | 联系方式与所在地（可选） |
-| `socials` | 社交链接，增删条目即可 |
-| `nav` | 顶部导航 |
-| `sections` | 首页各区块开关 |
-| `footer.copyright` / `footer.extra` | 页脚署名与备案号 |
+| Fine-grained | **Contents: Read and write**（若用编辑流程，再加 **Pull requests: Read and write**）|
+| Classic | `repo` 整个范围 |
 
-### 2. 写文章
+保存后即可在任意设备、任意浏览器上管理内容。令牌只存在你自己浏览器的本地存储里，不会上传到任何第三方。
 
-在 `src/content/blog/` 新建 `.md` 文件：
+> 后台登录页也提供 GitHub OAuth 登录按钮，但那条路要注册 OAuth App 并额外部署一个认证服务。用令牌登录就够了，不必折腾。
 
-```markdown
----
-title: 文章标题
-description: 一句话摘要，会出现在列表与搜索结果里
-pubDate: 2026-01-01
-tags: [标签一, 标签二]
-draft: false      # true 则只在本地可见，不参与线上构建
-featured: true    # 出现在首页「精选文章」区
----
+### 本地使用（推荐日常写作）
 
-正文用 Markdown 写。
+本地方式**连登录都不需要**，直接改磁盘上的文件：
+
+```bash
+pnpm dev
 ```
 
-文件名即网址：`hello-world.md` → `/blog/hello-world/`。
+然后在 **Chrome / Edge / Brave**（必须基于 Chromium，它依赖 File System Access API）打开：
 
-### 3. 加项目
-
-在 `src/content/projects/` 新建 `.md` 文件：
-
-```markdown
----
-title: 项目名
-description: 一句话说明
-year: 2026
-stack: [Astro, TypeScript]
-repo: https://github.com/you/repo   # 可选
-demo: https://example.com           # 可选
-featured: true                      # 首页项目区优先展示
-order: 1                            # 越小越靠前
----
+```
+http://localhost:4321/admin/index.html
 ```
 
-字段写错或漏填必填项时，**构建会直接失败并指出是哪一行** —— 不会静默生成空页面。
+点「使用本地仓库」，在弹出的对话框里选中项目根目录。之后所有改动都落在本地文件上，你自己 `git commit` 决定什么时候提交。
+
+> 地址必须带上 `index.html`，否则开发服务器会把它当页面热重载，边改边刷新。
+
+### 登录前要改的一处
+
+`public/admin/config.yml` 里的 `repo` 现在是占位值，改成你自己的仓库：
+
+```yaml
+backend:
+  name: github
+  repo: 你的用户名/dalao.me
+  branch: main
+```
+
+---
+
+## 内容与字段
+
+后台侧边栏有四类内容，全部可增删改：
+
+| 内容类型 | 存放位置 | 生成的路由 |
+| --- | --- | --- |
+| 文章 | `src/content/blog/*.md` | `/blog/文件名/` |
+| 项目 | `src/content/projects/*.md` | `/projects/文件名/` |
+| 自定义页面 | `src/content/pages/*.md` | `/文件名/` |
+| 站点设置 | `src/data/site.json` | 全站 |
+
+### 文章字段
+
+`标题`、`摘要`、`发布日期`、`修订日期`、`标签`、`草稿`、`精选`、`置顶`、`封面图`、`所属系列`、`SEO 标题`、`SEO 描述`、`原文链接`、`正文`。
+
+其中几个值得单独说明：
+
+- **草稿**：打开后只在本地预览可见，不会进入线上构建
+- **置顶**：排在文章列表最前面
+- **原文链接**：文章首发在其他平台时填写，会输出指向原文的 canonical，避免被判定为重复内容
+- **SEO 标题 / 描述**：留空就用「标题」和「摘要」
+
+### 项目字段
+
+`名称`、`简介`、`年份`、`技术栈`、`状态`、`担任角色`、`亮点`、`图集`、`源码地址`、`在线地址`、`精选`、`排序权重`、`说明`。
+
+**状态**有三个选项：维护中 / 开发中 / 已归档。默认的「维护中」不显示徽章，另外两种会在卡片上标出来。
+
+### 自定义页面
+
+用来放 `/uses/`、`/friends/` 这类固定网址的页面，和文章一样用 Markdown 写。
+
+文件名决定网址：`uses.md` → `/uses/`。**避免使用 `about`、`blog`、`projects`、`tags` 这几个已被占用的名字** —— Astro 中静态路由优先，同名的新页面不会生效。
+
+### 加一个新字段
+
+只改两个地方，字段就会同时出现在后台表单和构建校验里：
+
+1. `src/content.config.ts` —— 加校验规则（类型、是否必填、默认值）
+2. `public/admin/config.yml` —— 在对应 collection 的 `fields` 里加表单项
+
+比如给文章加一个「阅读难度」：
+
+```ts
+// src/content.config.ts
+difficulty: z.enum(['入门', '进阶', '深入']).default('入门'),
+```
+
+```yaml
+# public/admin/config.yml，放在 blog 的 fields 里
+- name: difficulty
+  label: 阅读难度
+  widget: select
+  default: 入门
+  options: [入门, 进阶, 深入]
+```
+
+字段名两边必须一致。之后在页面上用 `post.data.difficulty` 取用即可。
+
+**改错会怎样？** 构建会立刻失败，并把出问题的字段名和原因打出来 —— 而不是静默生成一个空页面。
+
+### 站点设置
+
+对应 `src/data/site.json`，包含站点名、副标题、作者信息、社交链接、导航、首页区块开关、首页按钮与数量、页脚。这个文件由 `src/lib/site.ts` 用 Zod 校验，错填会给出可定位的报错：
+
+```
+src/data/site.json 校验未通过：
+  · url —— Invalid URL
+  · author.name —— Required
+```
 
 ---
 
 ## 部署
 
-两种方式都是免费的，任选其一。推荐用 **Git 集成**：以后 `git push` 就自动上线。
+两种方式都免费，推荐 **Git 集成**：以后 `git push` 自动上线，后台保存内容也会自动触发。
 
 ### 方案 A：Vercel
 
-**A-1 网页导入（推荐）**
+1. 推到 GitHub
+2. 打开 [vercel.com/new](https://vercel.com/new) 导入仓库，自动识别 Astro，直接 Deploy
+3. **Settings → Domains** 添加 `dalao.me`，按提示配置 DNS
 
-1. 把项目推到 GitHub
-2. 打开 [vercel.com/new](https://vercel.com/new)，导入该仓库
-3. Vercel 会自动识别 Astro，直接点 Deploy
-4. 部署完成后进入 **Settings → Domains**，添加 `dalao.me`，按提示在你的域名服务商处配置 DNS 记录
-
-**A-2 命令行**
-
-```bash
-npx vercel          # 预览部署
-npx vercel --prod   # 正式部署
-```
+命令行方式：`npx vercel`（预览）/ `npx vercel --prod`（正式）
 
 ### 方案 B：Cloudflare Pages
 
-**B-1 网页导入（推荐）**
+1. 推到 GitHub
+2. 控制台 → **Workers & Pages → Create → Pages → Connect to Git**
+3. 构建配置：Framework preset `Astro`，Build command `pnpm build`，Output directory `dist`
+4. **Custom domains** 添加 `dalao.me`
 
-1. 把项目推到 GitHub
-2. 打开 Cloudflare 控制台 → **Workers & Pages → Create → Pages → Connect to Git**
-3. 选择仓库，构建配置：
-   - Framework preset：`Astro`
-   - Build command：`pnpm build`
-   - Build output directory：`dist`
-4. 部署完成后进入 **Custom domains**，添加 `dalao.me`
-
-**B-2 命令行**
-
-```bash
-pnpm build
-npx wrangler pages deploy dist
-```
-
-项目名已在 `wrangler.jsonc` 里配好（`dalao-me`）。首次运行会要求登录 Cloudflare。
+命令行方式：`pnpm build && npx wrangler pages deploy dist`
 
 ### 绑定域名
 
-两个平台都会在控制台给出**需要配置的 DNS 记录**，照抄到你的域名服务商即可，通常十几分钟生效：
-
-- **根域 `dalao.me`**：平台会给出 A 记录或要求把 NS 托管给平台
-- **子域 `www.dalao.me`**：通常是 CNAME 记录
-
-> 记录值请以控制台当时显示的为准 —— 平台会调整 IP，别照抄旧教程里的地址。
+两个平台都会给出**需要你配置的 DNS 记录**，照抄到域名服务商即可，通常十几分钟生效。记录值以控制台当时显示的为准 —— 平台会调整 IP，别照抄旧教程。
 
 ### 部署相关的两个坑
 
 **1. 依赖构建脚本需要显式放行。**
 
-`pnpm@10+` 默认拦截依赖的 `postinstall` 脚本。本项目的 `pnpm-workspace.yaml` 已经放行了 `esbuild` 和 `sharp`：
+`pnpm@10+` 默认拦截依赖的 `postinstall` 脚本。`pnpm-workspace.yaml` 已放行 `esbuild` 和 `sharp`：
 
 ```yaml
 allowBuilds:
@@ -147,13 +192,13 @@ allowBuilds:
   sharp: true
 ```
 
-如果以后新增了带构建脚本的依赖，安装时会报 `ERR_PNPM_IGNORED_BUILDS`，把包名加进这个文件即可。**这个文件必须一起提交**，否则线上构建会失败。
+以后新增带构建脚本的依赖时，安装会报 `ERR_PNPM_IGNORED_BUILDS`，把包名加进来即可。**这个文件必须一起提交**，否则线上构建会失败。
 
-> 注意：自 pnpm v11 起，设置在 `package.json` 的 `pnpm` 字段里**已不再被读取**，必须写在 `pnpm-workspace.yaml`。
+> 自 pnpm v11 起，写在 `package.json` 的 `pnpm` 字段里**已不再被读取**，必须写在 `pnpm-workspace.yaml`。
 
-**2. Node 版本。**
+**2. 后台不能放在 `src/pages/` 下。**
 
-`package.json` 的 `engines` 已声明 `>=22.12.0`，`.nvmrc` 也已提供。若平台默认版本过低，在平台设置里指定 Node 22+ 即可。
+`public/admin/index.html` 必须保持是静态文件。如果改成 `src/pages/admin.astro`，本地开发时页面会随每次改动热重载，编辑体验会被打断。
 
 ---
 
@@ -162,22 +207,26 @@ allowBuilds:
 ```
 ├─ astro.config.mjs          # 站点地址、集成、代码高亮主题
 ├─ pnpm-workspace.yaml       # pnpm 设置（含依赖构建白名单）
-├─ vercel.json               # Vercel 安全响应头与缓存策略
+├─ vercel.json               # Vercel 响应头与缓存策略
 ├─ wrangler.jsonc            # Cloudflare Pages 配置
 ├─ public/
+│  ├─ admin/
+│  │  ├─ index.html          # ★ 后台入口
+│  │  └─ config.yml          # ★ 后台配置：内容类型与字段都在这里定义
+│  ├─ media/                 # 后台上传的图片存放于此
 │  ├─ favicon.svg
 │  ├─ og.png                 # 社交分享图，直接替换同名文件即可
 │  └─ _headers               # Cloudflare 的响应头配置
 └─ src/
-   ├─ site.config.ts         # ★ 个人信息都在这
-   ├─ content.config.ts      # 内容集合的字段校验规则
+   ├─ data/site.json         # ★ 站点配置（可在后台编辑）
+   ├─ lib/site.ts            # 站点配置的校验与类型
+   ├─ content.config.ts      # ★ 内容字段的校验规则
    ├─ content/
    │  ├─ blog/*.md           # 文章
-   │  └─ projects/*.md       # 项目
+   │  ├─ projects/*.md       # 项目
+   │  └─ pages/*.md          # 自定义页面
    ├─ styles/global.css      # ★ 设计令牌与全站样式
-   ├─ layouts/
-   │  ├─ BaseLayout.astro    # 页面骨架、主题初始化
-   │  └─ PostLayout.astro    # 文章页
+   ├─ layouts/               # 页面骨架、文章页
    ├─ components/            # 图标、导航、页脚、SEO
    ├─ lib/utils.ts           # 日期、排序、标签等工具
    └─ pages/                 # 路由
@@ -193,7 +242,7 @@ allowBuilds:
 :root {
   --bg: #ffffff;
   --text: #18181b;
-  --accent: #2563eb;   /* 强调色 */
+  --accent: #2563eb;      /* 强调色 */
 }
 
 :root[data-theme='dark'] {
@@ -203,22 +252,28 @@ allowBuilds:
 }
 ```
 
-**加社交图标** —— 在 `src/components/Icon.astro` 的 `ICONS` 对象里加一条 SVG，然后在 `site.config.ts` 的 `socials` 里用同一个名字。
+**加社交图标** —— 在 `src/components/Icon.astro` 的 `ICONS` 里加一条 SVG，然后在后台「站点设置 → 社交链接」里选用。
 
-**换代码高亮主题** —— 改 `astro.config.mjs` 里的 `shikiConfig.themes`，取值见 [Shiki 主题列表](https://shiki.style/themes)。
+**换代码高亮主题** —— 改 `astro.config.mjs` 的 `shikiConfig.themes`，取值见 [Shiki 主题列表](https://shiki.style/themes)。
 
 **换分享图** —— 替换 `public/og.png`（建议 1200×630）。
 
-**改字体** —— `global.css` 里改 `--font-sans` / `--font-mono`。默认用系统字体栈，不加载外部字体，因此没有网络请求、没有闪字。
+**改字体** —— 改 `global.css` 里的 `--font-sans` / `--font-mono`。默认用系统字体栈，不加载外部字体，因此没有额外网络请求、也没有闪字。
 
 ---
 
 ## 技术说明
 
+**后台为什么不需要服务器？**
+Sveltia CMS 是一个跑在浏览器里的静态应用，它通过 GitHub API 直接提交文件到你的仓库。Git 仓库就是数据库，提交动作就是"保存"。托管平台上没有多出任何进程。
+
 **为什么代码高亮的深色覆盖要带 `!important`？**
-Shiki 的双主题输出会把浅色值直接内联成 `style="color:#xxx"`，深色值放进 `--shiki-dark` 变量。内联样式优先级高于任何普通选择器，所以 `global.css` 里深色覆盖必须带 `!important`，否则深色模式下代码块会停在白底深字、而文字已变浅，直接看不清。
+Shiki 的双主题输出会把浅色值直接内联成 `style="color:#xxx"`，深色值放进 `--shiki-dark` 变量。内联样式优先级高于任何普通选择器，所以深色覆盖必须带 `!important`，否则深色模式下代码块会停在白底深字、而文字已变浅，直接看不清。
 
 **为什么日期用 UTC getter？**
 frontmatter 里的 `2026-01-01` 按 UTC 零点解析。若用本地时间取值，构建机时区不同（本地 UTC+8、平台为 UTC）会产出差一天的日期。
+
+**为什么站点配置是 JSON？**
+因为后台只能编辑数据文件，改不了 TypeScript。把它做成 JSON 后，站点信息既能在后台点着改，也能直接手改，而 `src/lib/site.ts` 的 Zod schema 保证改错了会在构建时立刻报错。
 
 **构建产物** —— `dist/` 里就是普通 HTML/CSS，任何静态托管都能直接跑，换平台只需改一个配置文件。

@@ -2,7 +2,8 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
-import { SITE } from '../../site.config';
+import { SITE } from '../../lib/site';
+import { statusLabel } from '../../lib/utils';
 
 const projects = (await getCollection('projects')).sort(
   (a, b) =>
@@ -31,6 +32,9 @@ const projects = (await getCollection('projects')).sort(
             <article class="card card--linked">
               <div class="card__meta">
                 {project.data.year && <span>{project.data.year}</span>}
+                {statusLabel(project.data.status) && (
+                  <span class="status-badge">{statusLabel(project.data.status)}</span>
+                )}
                 {project.data.featured && <span>· 精选</span>}
               </div>
 

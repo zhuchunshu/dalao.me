@@ -6,6 +6,13 @@ stack:
   - Astro
   - TypeScript
   - CSS
+status: active
+role: 独立开发
+highlights:
+  - 自带可视化后台，内容与站点配置都能点着改，且不需要任何服务器
+  - 构建产物是纯静态文件，托管在 Vercel / Cloudflare 上，月成本为 0
+  - 全站样式由一组 CSS 变量驱动，换配色只需要改十几行
+  - 构建时校验所有内容字段，写错会直接报错而不是静默生成空页面
 featured: true
 order: 1
 repo: https://github.com/yourname/dalao.me

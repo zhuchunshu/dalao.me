@@ -1,0 +1,45 @@
+{
+  "url": "https://dalao.me",
+  "title": "dalao",
+  "tagline": "写代码，也写点别的。",
+  "description": "dalao 的个人网站 —— 记录项目、文章与正在琢磨的事情。",
+  "lang": "zh-CN",
+  "author": {
+    "name": "dalao",
+    "role": "Developer",
+    "bio": [
+      "你好，我是 dalao。这里是我的个人角落，用来放一些做完的项目、想明白的事情，以及还没想明白的。",
+      "如果你对这里的东西感兴趣，欢迎通过下面的方式找到我。"
+    ],
+    "location": "",
+    "email": "hi@dalao.me",
+    "avatar": ""
+  },
+  "socials": [
+    { "label": "GitHub", "href": "https://github.com/yourname", "icon": "github" },
+    { "label": "X", "href": "https://x.com/yourname", "icon": "x" },
+    { "label": "Email", "href": "mailto:hi@dalao.me", "icon": "mail" },
+    { "label": "RSS", "href": "/rss.xml", "icon": "rss" }
+  ],
+  "nav": [
+    { "label": "首页", "href": "/" },
+    { "label": "文章", "href": "/blog/" },
+    { "label": "项目", "href": "/projects/" },
+    { "label": "关于", "href": "/about/" }
+  ],
+  "sections": {
+    "showProjects": true,
+    "showFeaturedPosts": true,
+    "showLatestPosts": true
+  },
+  "home": {
+    "primaryCta": { "label": "看看项目", "href": "/projects/" },
+    "secondaryCta": { "label": "读文章", "href": "/blog/" },
+    "projectsCount": 4,
+    "latestPostsCount": 6
+  },
+  "footer": {
+    "copyright": "",
+    "extra": ""
+  }
+}

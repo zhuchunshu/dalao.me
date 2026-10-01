@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 后台不该被搜索引擎收录 -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>内容管理 — dalao.me</title>
+  </head>
+  <body>
+    <!--
+      Sveltia CMS：一个单文件应用，从 CDN 加载，不需要构建步骤、不需要服务器、不需要数据库。
+      它直接读写 GitHub 仓库里的 Markdown / JSON，提交后由 Vercel 或 Cloudflare 自动重新部署。
+
+      注意两个官方明确的坑：
+      1. 不要加 <link rel="stylesheet"> —— 样式已打包进这个 JS。
+      2. 不要加 type="module" —— 它不是 ES module，加了会导致初始化异常。
+
+      本地开发请在浏览器打开 http://localhost:4321/admin/index.html
+      （必须带 index.html，且用 Chrome / Edge / Brave，它依赖 File System Access API）。
+    -->
+    <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+  </body>
+</html>

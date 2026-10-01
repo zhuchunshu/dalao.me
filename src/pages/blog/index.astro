@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { SITE } from '../../site.config';
+import { SITE } from '../../lib/site';
 import { visiblePosts, sortByDateDesc, formatDate, collectTags } from '../../lib/utils';
 
 const posts = sortByDateDesc(visiblePosts(await getCollection('blog')));

@@ -19,15 +19,49 @@ interface Props {
   /** 相邻文章导航 */
   prev?: Neighbor;
   next?: Neighbor;
+
+  // 以下为可选展示字段，都来自 frontmatter，留空则什么都不显示
+  /** 封面图 */
+  cover?: string;
+  /** 所属系列 */
+  series?: string;
+
+  // SEO 覆盖：留空则退回 title / description
+  seoTitle?: string;
+  seoDescription?: string;
+  /** 原文链接，用于 canonical */
+  canonical?: string;
 }
 
-const { title, description, pubDate, updatedDate, tags = [], body, prev, next } = Astro.props;
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  tags = [],
+  body,
+  prev,
+  next,
+  cover = '',
+  series = '',
+  seoTitle = '',
+  seoDescription = '',
+  canonical = '',
+} = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} type="article" publishedTime={pubDate}>
+<BaseLayout
+  title={seoTitle || title}
+  description={seoDescription || description}
+  type="article"
+  publishedTime={pubDate}
+  canonicalUrl={canonical}
+>
   <article>
     <header class="post-header">
       <div class="container container--narrow">
+        {series && <p class="detail-eyebrow">系列 · {series}</p>}
+
         <h1 class="post-header__title">{title}</h1>
         <p class="post-header__desc">{description}</p>
 
@@ -59,7 +93,23 @@ const { title, description, pubDate, updatedDate, tags = [], body, prev, next } 
       </div>
     </header>
 
+    {
+      cover && (
+        <div class="container container--narrow">
+          <img src={cover} alt="" class="post-cover" loading="eager" decoding="async" />
+        </div>
+      )
+    }
+
     <div class="container container--narrow">
+      {canonical && (
+        <p class="canonical-note">
+          本文首发于别处，原文地址：<a href={canonical} rel="canonical noopener" target="_blank">
+            {canonical}
+          </a>
+        </p>
+      )}
+
       <div class="prose">
         <slot />
       </div>
