@@ -1,6 +1,11 @@
-# pnpm 12 配置入口（package.json 的 "pnpm" 字段自 v11 起不再读取）
-# strictDepBuilds 默认 true：任何未经审批的依赖构建脚本会让安装以非零码退出，
-# 进而中断 Vercel / Cloudflare Pages 的线上构建。此处显式放行所需的两项。
+# pnpm 12 的配置入口（package.json 里的 "pnpm" 字段自 v11 起已不再被读取）
+#
+# strictDepBuilds 默认为 true：任何未经审批的依赖构建脚本都会让安装以非零码退出，
+# 从而中断 Vercel / Cloudflare 的线上构建。这里显式放行项目实际需要的两项。
+#
+# 注意：本项目刻意不把 wrangler 列为依赖 —— Cloudflare 的构建环境自带它，
+# 而 wrangler 会顺带拖入 40MB 的 workerd 原生运行时（只有本地预览才用得到），
+# 对纯静态站是纯负担。若将来要本地跑 wrangler dev，记得把 workerd 也加进下面的清单。
 allowBuilds:
   esbuild: true
   sharp: true
