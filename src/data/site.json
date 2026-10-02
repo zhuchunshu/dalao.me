@@ -1,8 +1,8 @@
 {
   "url": "https://dalao.me",
-  "title": "dalao",
+  "title": "大佬的我",
   "tagline": "写代码，也写点别的。",
-  "description": "dalao 的个人网站 —— 记录项目、文章与正在琢磨的事情。",
+  "description": "大佬 的个人网站 —— 记录项目、文章与正在琢磨的事情。",
   "lang": "zh-CN",
   "author": {
     "name": "dalao",
@@ -15,17 +15,24 @@
     "email": "hi@dalao.me",
     "avatar": ""
   },
-  "socials": [
-    { "label": "GitHub", "href": "https://github.com/yourname", "icon": "github" },
-    { "label": "X", "href": "https://x.com/yourname", "icon": "x" },
-    { "label": "Email", "href": "mailto:hi@dalao.me", "icon": "mail" },
-    { "label": "RSS", "href": "/rss.xml", "icon": "rss" }
-  ],
+  "socials": [],
   "nav": [
-    { "label": "首页", "href": "/" },
-    { "label": "文章", "href": "/blog/" },
-    { "label": "项目", "href": "/projects/" },
-    { "label": "关于", "href": "/about/" }
+    {
+      "label": "首页",
+      "href": "/"
+    },
+    {
+      "label": "文章",
+      "href": "/blog/"
+    },
+    {
+      "label": "项目",
+      "href": "/projects/"
+    },
+    {
+      "label": "关于",
+      "href": "/about/"
+    }
   ],
   "sections": {
     "showProjects": true,
@@ -33,8 +40,14 @@
     "showLatestPosts": true
   },
   "home": {
-    "primaryCta": { "label": "看看项目", "href": "/projects/" },
-    "secondaryCta": { "label": "读文章", "href": "/blog/" },
+    "primaryCta": {
+      "label": "看看项目",
+      "href": "/projects/"
+    },
+    "secondaryCta": {
+      "label": "读文章",
+      "href": "/blog/"
+    },
     "projectsCount": 4,
     "latestPostsCount": 6
   },
