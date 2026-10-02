@@ -167,14 +167,55 @@ src/data/site.json 校验未通过：
 
 命令行方式：`npx vercel`（预览）/ `npx vercel --prod`（正式）
 
-### 方案 B：Cloudflare Pages
+### 方案 B：Cloudflare Workers（新建项目的默认方式）
 
 1. 推到 GitHub
-2. 控制台 → **Workers & Pages → Create → Pages → Connect to Git**
-3. 构建配置：Framework preset `Astro`，Build command `pnpm build`，Output directory `dist`
-4. **Custom domains** 添加 `dalao.me`
+2. 控制台 → **Workers & Pages → Create → Workers → Connect to Git**
+3. 构建配置：
+   - Build command：`pnpm build`
+   - Deploy command：`npx wrangler deploy`
+4. **Settings → Domains & Routes** 添加 `dalao.me`
 
-命令行方式：`pnpm build && npx wrangler pages deploy dist`
+仓库里的 `wrangler.jsonc` 已经按 Workers 的静态资源方式配好：
+
+```jsonc
+{
+  "name": "dalao-me",
+  "compatibility_date": "2026-10-02",
+  "assets": {
+    "directory": "./dist/",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}
+```
+
+`name` 必须与 Cloudflare 上的 Worker 名称一致，否则 `wrangler deploy` 会部署到另一个同名 Worker 上。改完记得同步提交。
+
+命令行方式：`pnpm build && npx wrangler deploy`
+
+### 方案 C：Cloudflare Pages（老式托管，仍然可用）
+
+Workers 和 Pages 的配置字段**不通用** —— 这一点极易踩坑：
+
+| | Workers（推荐）| Pages |
+| --- | --- | --- |
+| 产物目录字段 | `assets.directory` | `pages_build_output_dir` |
+| 部署命令 | `npx wrangler deploy` | `npx wrangler pages deploy dist` |
+
+如果要用 Pages，把 `wrangler.jsonc` 换成：
+
+```jsonc
+{
+  "name": "dalao-me",
+  "compatibility_date": "2026-10-02",
+  "pages_build_output_dir": "dist"
+}
+```
+
+然后在控制台走 **Workers & Pages → Create → Pages → Connect to Git**，Output directory 填 `dist`。
+
+> 用 Pages 的字段去跑 `wrangler deploy`，会卡在部署阶段失败 —— 因为 Workers 根本不认识 `pages_build_output_dir`。
 
 ### 绑定域名
 
@@ -208,7 +249,7 @@ allowBuilds:
 ├─ astro.config.mjs          # 站点地址、集成、代码高亮主题
 ├─ pnpm-workspace.yaml       # pnpm 设置（含依赖构建白名单）
 ├─ vercel.json               # Vercel 响应头与缓存策略
-├─ wrangler.jsonc            # Cloudflare Pages 配置
+├─ wrangler.jsonc            # Cloudflare Workers 静态资源部署配置
 ├─ public/
 │  ├─ admin/
 │  │  ├─ index.html          # ★ 后台入口

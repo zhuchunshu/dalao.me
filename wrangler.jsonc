@@ -1,8 +1,16 @@
 {
-  // Cloudflare Pages 项目配置
-  // 部署命令：pnpm build && npx wrangler pages deploy dist
-  "$schema": "node_modules/wrangler/config-schema.json",
+  // Cloudflare Workers 静态资源部署配置
+  // 用 wrangler deploy 部署，产物目录为 dist/
+  // 参考：https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
   "name": "dalao-me",
+  // 保持为「今天」附近的日期即可，用于锁定运行时行为
   "compatibility_date": "2026-10-02",
-  "pages_build_output_dir": "dist"
+  "assets": {
+    "directory": "./dist/",
+    // 命中不到文件时，返回最近的 404.html 并带 404 状态码
+    "not_found_handling": "404-page",
+    // 目录式 URL：/about/index.html 以 /about/ 提供服务，与应用里的 format: 'directory' 一致
+    "html_handling": "auto-trailing-slash"
+  }
 }
