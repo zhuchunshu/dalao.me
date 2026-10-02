@@ -1,18 +1,20 @@
 ---
-title: 示例项目：命令行工具
-description: 一个把重复劳动压缩成一条命令的小工具。用来演示项目卡片在列表里的排布效果。
-year: 2025
+title: sforum
+description: 高性能模块化现代论坛程序
+year: '2022'
 stack:
-  - Rust
-  - CLI
+  - Go
+  - Javascript
+  - Vue
 status: wip
 role: 独立开发
 highlights:
-  - 单文件二进制，无运行时依赖，扔到任何机器上都能跑
-  - 启动耗时在毫秒级 —— 这是它被塞进脚本、一天调用几百次的前提
   - 所有子命令支持 --dry-run，先看清楚要动什么再执行
+gallery: []
+repo: https://github.com/zhuchunshu/SForum
+demo: ''
+featured: false
 order: 2
-repo: https://github.com/yourname/example-cli
 ---
 
 ## 它解决什么
